@@ -1,0 +1,314 @@
+\documentclass[a4paper,11pt]{article}
+\usepackage[onehalfspacing]{setspace} %Zeilenabstand
+\input{head}
+\usepackage[english]{babel}
+\usepackage{shellesc}
+\usepackage{csquotes}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage[style=apa, backend=biber]{biblatex}
+\addbibresource[]{ref.bib}
+\renewcommand{\qed}{\hfill\blacksquare}
+\newcommand{\qedwhite}{\hfill \ensuremath{\Box}}
+\definecolor{answercolor}{HTML}{0071BC}
+\newcommand*{\answer}{\textcolor{answercolor}}
+\newenvironment{answerenv}{\color{answercolor}}{}
+\newcommand{\E}{\mathbb{E}}
+\usepackage{booktabs}
+\usepackage{longtable}
+\setcounter{section}{-1}
+\usepackage{amsmath}
+\usepackage{tikz}
+\usetikzlibrary{arrows,calc}
+\usepackage{relsize}
+\usepackage{tcolorbox}
+\newtcolorbox{qbox}[1]{colback=blue!5!white, colframe=blue!50!black, fonttitle=\bfseries,title=#1}
+
+\begin{document}
+\selectlanguage{english}
+%-------------------------------
+%	TITLE SECTION
+%-------------------------------
+
+\fancyhead[C]{}
+\hrule  % Upper rule
+\begin{minipage}{0.295\textwidth} 
+\raggedright
+\footnotesize
+Lucas Paul Unterweger \hfill\\   
+\hfill\\
+Sophia Oberbrinkmann
+\end{minipage}
+\begin{minipage}{0.4\textwidth} 
+\centering 
+\large 
+Assignment\\ 
+\normalsize 
+Adv. Macro I\\ 
+\today \\
+\end{minipage}
+\begin{minipage}{0.295\textwidth} 
+\raggedleft
+\includegraphics[scale=0.15]{style/wu_transparent.png}\\
+\end{minipage}
+\hrule 
+\bigskip
+
+%-------------------------------
+%	CONTENTS
+%-------------------------------
+\section{Preliminary}
+The code that has been used for the assignment can be found on \href{https://github.com/therealLucasPaul/AdvMacroeconomics1_2023}{Github}.
+
+\tableofcontents
+\pagebreak
+\listoffigures
+\listoftables
+\pagebreak
+
+\section{Conditional and Unconditional Beta Convergence}
+\begin{qbox}{\subsection{Unconditional $\beta$-Convergence}}
+Perform an unconditional -convergence analysis for the period 1960-1990 and another one for the period 1990-2019 for all countries of the world for which data are available. How has the global income convergence pattern across countries changed over time?
+\end{qbox}
+
+We computed the average yearly growth rate using log-differences of the respective GDP per capita values. In mathematical terms and using the notation we used in class, this looks like
+$$\frac{\dot{\left(Y/L \right)}}{\left(Y/L \right)}_{t,t+s} = \frac{\log(Y/L)_{t}-\log(Y/L)_{t+s}}{s}$$
+
+The table are the results from the unconditional $\beta$-convergence analysis. The first column refers to the period between 1960 and 1990 and the second column refers to the period between 1990 and 2019. 
+\begin{table}[!htbp] \centering 
+  \caption{Unconditional $\beta$-Convergence} 
+  \label{} 
+\begin{tabular}{@{\extracolsep{5pt}}lcc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+ & \multicolumn{2}{c}{\textit{Dependent variable:}} \\ 
+\cline{2-3} 
+\\[-1.8ex] & \multicolumn{2}{c}{gdppc\_growth} \\ 
+ & 1960 - 1990 & 1990 - 2019 \\ 
+\\[-1.8ex] & (1) & (2)\\ 
+\hline \\[-1.8ex] 
+ log(gdppc) & 0.003 & $-$0.004$^{***}$ \\ 
+  & (0.002) & (0.001) \\ 
+  & & \\ 
+ Constant & $-$0.002 & 0.056$^{***}$ \\ 
+  & (0.017) & (0.012) \\ 
+  & & \\ 
+\hline \\[-1.8ex] 
+Observations & 111 & 181 \\ 
+R$^{2}$ & 0.014 & 0.039 \\ 
+Adjusted R$^{2}$ & 0.005 & 0.033 \\ 
+Residual Std. Error & 0.021 (df = 109) & 0.021 (df = 179) \\ 
+F Statistic & 1.555 (df = 1; 109) & 7.237$^{***}$ (df = 1; 179) \\ 
+\hline 
+\hline \\[-1.8ex] 
+\textit{Note:}  & \multicolumn{2}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+\end{tabular} 
+\end{table} 
+
+The results show that the estimate for the base GDPpc is not significant in the first period, indicating that the is no significant evidence for $beta$-convergence in the first period. In the second period however, we can see that the estimate is negative and significant, implying unconditional $beta$ convergence for our sample. This result can also be seen from from the plots in \ref{fig:uncond}.  
+
+\pagebreak
+\vfill
+\begin{figure}[H]
+    \centering
+    \includegraphics[scale=0.7]{ConvergencePlots.png}
+    \caption{Unconditional $\beta$ convergence analysis for the the periods}
+    \label{fig:uncond}
+\end{figure}
+\vfill
+\pagebreak
+
+\begin{qbox}{\subsection{Conditional $\beta$-Convergence}}
+Perform an conditional $\beta$-convergence analysis for both periods, controlling for differences in population growth rates and investment shares (average over the period, both of these variables are available in the Penn World Table dataset). How does the interpretation of  your results differ from that of the previous question?
+\end{qbox}
+
+Continuing with the conditional $\beta$ convergence analysis, we now control for the savings rate and the population growth. To this end, we computed the average population growth and savings rates. Using that, we can run the following regression:
+
+$$\frac{\dot{\left(Y/L \right)}}{\left(Y/L \right)}_{t,t+s} = \alpha + \beta_1\cdot \log(Y/L)_{t} + \beta_2\cdot \text{savings} + \beta_3\cdot \text{popgrowth} + \epsilon$$
+
+Again, the results of this regression for both periods can be found in the table below. We can now see that conditional $\beta$-convergence is present in both periods as both estimates for the base GDPpc is negative and significant. 
+
+\begin{table}[!htbp] \centering 
+  \caption{Conditional $\beta$-Convergence Analysis} 
+  \label{} 
+\begin{tabular}{@{\extracolsep{5pt}}lcc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+ & \multicolumn{2}{c}{\textit{Dependent variable:}} \\ 
+\cline{2-3} 
+\\[-1.8ex] & \multicolumn{2}{c}{gdppc\_growth} \\ 
+ & 1960 - 1990 & 1990 - 2019 \\ 
+\\[-1.8ex] & (1) & (2)\\ 
+\hline \\[-1.8ex] 
+ log(gdppc) & $-$0.005$^{**}$ & $-$0.007$^{***}$ \\ 
+  & (0.002) & (0.002) \\ 
+  & & \\ 
+ population growth & $-$0.915$^{***}$ & $-$0.334$^{***}$ \\ 
+  & (0.221) & (0.125) \\ 
+  & & \\ 
+ invsh & 0.061$^{***}$ & 0.088$^{***}$ \\ 
+  & (0.017) & (0.020) \\ 
+  & & \\ 
+ Constant & 0.068$^{***}$ & 0.075$^{***}$ \\ 
+  & (0.020) & (0.013) \\ 
+  & & \\ 
+\hline \\[-1.8ex] 
+Observations & 111 & 181 \\ 
+R$^{2}$ & 0.269 & 0.152 \\ 
+Adjusted R$^{2}$ & 0.248 & 0.137 \\ 
+Residual Std. Error & 0.018 (df = 107) & 0.020 (df = 177) \\ 
+F Statistic & 13.093$^{***}$ (df = 3; 107) & 10.543$^{***}$ (df = 3; 177) \\ 
+\hline 
+\hline \\[-1.8ex] 
+\textit{Note:}  & \multicolumn{2}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+\end{tabular} 
+\end{table}
+
+\pagebreak
+
+\section{Mankiw, Romer and Weil Paper}
+In their seminal paper A Contribution to the Empirics of Economic Growth, Mankiw, Romer and Weil include human capital in the Solow model and present empirical evidence about the role that education plays as a determinant of economic growth. You can find the data used in the paper here: \url{https://github.com/HariharanJayashankar/mrw1992}.
+\begin{qbox}{\subsection{Replicating Table VI}}
+Making use of the data used in the paper, replicate Table VI (page 429 of the original paper, that can be found here: \url{https://scholar.harvard.edu/sites/scholar.harvard. edu/files/mankiw/files/contribution_to_the_empirics.pdf}.
+\end{qbox}
+As in the previous question, the code for the replication can be found on \href{https://github.com/therealLucasPaul/AdvMacroeconomics1_2023}{Github}. The resulting table can be found below: 
+
+\begin{table}[!htbp] \centering 
+  \caption{Replication of Table VI in MRW} 
+  \label{} 
+\begin{tabular}{@{\extracolsep{5pt}}lccc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+ & \multicolumn{3}{c}{log difference GDP per working-age person 1960-1985} \\ 
+\cline{2-4} 
+\\[-1.8ex] & \multicolumn{3}{c}{dep} \\ 
+ & Non-Oil & Intermediate & OECD \\ 
+\\[-1.8ex] & (1) & (2) & (3)\\ 
+\hline \\[-1.8ex] 
+ ln(Y60) & $-$0.298$^{***}$ & $-$0.372$^{***}$ & $-$0.402$^{***}$ \\ 
+  & (0.060) & (0.067) & (0.069) \\ 
+  & & & \\ 
+ ln(I/GDP)-ln(n+g+d) & 0.501$^{***}$ & 0.506$^{***}$ & 0.395$^{**}$ \\ 
+  & (0.082) & (0.095) & (0.152) \\ 
+  & & & \\ 
+ ln(SCHOOL)-ln(n+g+d) & 0.235$^{***}$ & 0.266$^{***}$ & 0.241 \\ 
+  & (0.059) & (0.080) & (0.142) \\ 
+  & & & \\ 
+ Constant & 2.457$^{***}$ & 3.090$^{***}$ & 3.554$^{***}$ \\ 
+  & (0.473) & (0.530) & (0.634) \\ 
+  & & & \\ 
+\hline \\[-1.8ex] 
+Observations & 98 & 75 & 22 \\ 
+R$^{2}$ & 0.482 & 0.460 & 0.707 \\ 
+Adjusted R$^{2}$ & 0.465 & 0.437 & 0.659 \\ 
+Residual Std. Error & 0.326 (df = 94) & 0.304 (df = 71) & 0.145 (df = 18) \\ 
+F Statistic & 29.112$^{***}$ (df = 3; 94) & 20.156$^{***}$ (df = 3; 71) & 14.504$^{***}$ (df = 3; 18) \\ 
+\hline 
+\hline \\[-1.8ex] 
+\textit{Note:}  & \multicolumn{3}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+\end{tabular} 
+\end{table} 
+
+\pagebreak
+
+\begin{qbox}{\subsection{Effect of Human Capital Growth in African Countries}}
+Is the effect of human capital on economic growth different in African countries as compared to the rest of the world? Test this hypothesis making use of the model which is presented in Table VI.
+\end{qbox}
+
+We continue to evaluate the effect of human capital in this model framework. To analyse whether the effect is different in African countries, we included an interaction term between an Africa dummy variable and the variable that captures human capital. We decided to evaluate the effect in three samples, which can be seen in the output table \ref{tab:HumanCap} below. The first column refers to the non-oil sample, the second one to the entire set of countries and the third one to the sample which excludes all countries with an Summers and Heston investment grade \textit{D}. 
+
+\begin{table}[!htbp] \centering 
+  \caption{Effect of Human Capital in African Countries} 
+  \label{tab:HumanCap} 
+\begin{tabular}{@{\extracolsep{5pt}}lccc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+ & \multicolumn{3}{c}{log-diff. GDP per working-age person 1960-1985} \\ 
+\cline{2-4} 
+\\[-1.8ex] & \multicolumn{3}{c}{} \\ 
+ & Non-Oil & All available countries & Intermediate \\ 
+\\[-1.8ex] & (1) & (2) & (3)\\ 
+\hline \\[-1.8ex] 
+ ln(Y60)& $-$0.289$^{***}$ & $-$0.290$^{***}$ & $-$0.369$^{***}$ \\ 
+  & (0.060) & (0.049) & (0.067) \\ 
+  & & & \\ 
+  ln(I/GDP)-ln(n+g+d) & 0.537$^{***}$ & 0.571$^{***}$ & 0.549$^{***}$ \\ 
+  & (0.086) & (0.083) & (0.105) \\ 
+  & & & \\ 
+  ln(SCHOOL)-ln(n+g+d) & 0.112 & 0.054 & 0.171 \\ 
+  & (0.107) & (0.104) & (0.126) \\ 
+  & & & \\ 
+  ln(SCHOOL)-ln(n+g+d):Africa & 0.125 & 0.169$^{*}$ & 0.108 \\ 
+  & (0.091) & (0.090) & (0.110) \\ 
+  & & & \\ 
+ Constant & 2.357$^{***}$ & 2.347$^{***}$ & 3.026$^{***}$ \\ 
+  & (0.476) & (0.406) & (0.534) \\ 
+  & & & \\ 
+\hline \\[-1.8ex] 
+Observations & 98 & 104 & 75 \\ 
+R$^{2}$ & 0.492 & 0.528 & 0.467 \\ 
+Adjusted R$^{2}$ & 0.470 & 0.509 & 0.437 \\ 
+Residual Std. Error & 0.325 (df = 93) & 0.334 (df = 99) & 0.304 (df = 70) \\ 
+F Statistic & 22.516$^{***}$ (df = 4; 93) & 27.729$^{***}$ (df = 4; 99) & 15.344$^{***}$ (df = 4; 70) \\ 
+\hline 
+\hline \\[-1.8ex] 
+\textit{Note:}  & \multicolumn{3}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+\end{tabular} 
+\end{table}
+
+Now, given the t-tests that are part of the output table, we can test the desired hypothesis. Column (2) supports the hypothesis that the effect of human capital on economic growth is stronger in African countries than the rest of the world as the interaction variable is positive and - barely but still - significant.
+The restricted samples however, the intermediate and the non-oil ones, do not show significant effects. In fact, the effect of human capital disappears entirely in these samples. Nevertheless, the entire sample supports the hypothesis.
+
+\pagebreak
+
+\begin{qbox}{\subsection{Speed of Convergence}}
+Is the speed of conditional income convergence implied by this model different in African countries as compared to the rest of the world?
+\end{qbox}
+
+As before, we estimated the effect in three different samples. The first column in table \ref{tab:SpeedOfConvergence} uses the \textit{non-oil} sample in accordance to the MRW paper, the second column uses the entire available sample of countries and the third column excludes all countries with an investment grade \textit{D}.
+
+\begin{table}[!htbp] \centering 
+  \caption{Differences in the Speed of Convergence in African Countries} 
+  \label{tab:SpeedOfConvergence} 
+\begin{tabular}{@{\extracolsep{5pt}}lccc} 
+\\[-1.8ex]\hline 
+\hline \\[-1.8ex] 
+ & \multicolumn{3}{c}{log difference GDP per working-age person 1960-1985} \\ 
+\cline{2-4} 
+\\[-1.8ex] & \multicolumn{3}{c}{} \\ 
+ & Non-Oil & All available countries & Intermediate \\ 
+\\[-1.8ex] & (1) & (2) & (3)\\ 
+\hline \\[-1.8ex] 
+ ln(Y60) & $-$0.331$^{***}$ & $-$0.323$^{***}$ & $-$0.373$^{***}$ \\ 
+  & (0.060) & (0.050) & (0.067) \\ 
+  & & & \\
+  ln(Y60):Africa & $-$0.036$^{***}$ & $-$0.034$^{**}$ & $-$0.012 \\ 
+  & (0.013) & (0.014) & (0.017) \\ 
+  & & & \\  
+ ln(I/GDP)-ln(n+g+d) & 0.526$^{***}$ & 0.540$^{***}$ & 0.522$^{***}$ \\ 
+  & (0.080) & (0.077) & (0.098) \\ 
+  & & & \\ 
+ ln(SCHOOL)-ln(n+g+d) & 0.162$^{**}$ & 0.145$^{**}$ & 0.227$^{**}$ \\ 
+  & (0.063) & (0.064) & (0.097) \\ 
+  & & & \\ 
+
+ Constant & 2.742$^{***}$ & 2.679$^{***}$ & 3.085$^{***}$ \\ 
+  & (0.470) & (0.413) & (0.532) \\ 
+  & & & \\ 
+\hline \\[-1.8ex] 
+Observations & 98 & 104 & 75 \\ 
+R$^{2}$ & 0.519 & 0.540 & 0.464 \\ 
+Adjusted R$^{2}$ & 0.498 & 0.522 & 0.433 \\ 
+Residual Std. Error & 0.316 (df = 93) & 0.330 (df = 99) & 0.305 (df = 70) \\ 
+F Statistic & 25.072$^{***}$ (df = 4; 93) & 29.064$^{***}$ (df = 4; 99) & 15.144$^{***}$ (df = 4; 70) \\ 
+\hline 
+\hline \\[-1.8ex] 
+\textit{Note:}  & \multicolumn{3}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\ 
+\end{tabular} 
+\end{table} 
+
+The relevant parameter to test this hypothesis is the estimate for the base GDP in 1960. To check whether the implied convergence is different in African countries, we again included an interaction term between the Africa dummy and the base GDP. As we can see in table \ref{tab:SpeedOfConvergence}, the original estimates are all negative and significant implying conditional convergence in GDP per capita. In addition, the estimates of the interaction term are also negative and significant in the entire sample and the non-oil sample. In the intermediate sample, the effect is not significant. In general thou, the estimates support the hypothesis that the conditional income convergence is even stronger in African countries as the coefficient for the base GDP in African countries is even more negative implying even higher growth rates for poorer countries.  
+
+\end{document}

@@ -1,0 +1,175 @@
+---
+title: "Macro 1 - Assignment"
+author: "Lucas Unterweger, Sophia Oberbrinkmann"
+date: "2023-06-04"
+header-includes:
+   - \usepackage[utf8]{inputenc}
+output:
+  pdf_document: 
+    latex_engine: lualatex
+  html_document:
+    df_print: paged
+---
+
+# Question 1 - Convergence
+
+\textit{Using the data from the Penn World Table 10.1, available at http://www.rug.nl/ggdc/productivity/pwt/.}
+
+## Subquestion 1.1 - Unconditional Beta-Convergence
+
+\textit{Perform an unconditional $\beta$-convergence analysis for the period 1960-1990 and another one for the period 1990-2019 for all countries of the world for which data are available. How has the global income convergence pattern across countries changed over time?}
+
+```{r, echo=FALSE, warning=FALSE, message=FALSE}
+library(readxl)
+library(gridExtra)
+library(stargazer)
+library(tidyverse)
+library(haven)
+options(scipen=5)
+```
+
+```{r Unconditional Convergence Analysis, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+#### PERIOD I
+start_year = 1960
+end_year = 1990
+diff = end_year - start_year
+
+data_60_90 <-   
+  read_dta("pwt1001.dta")  %>%
+  select(country, year, rgdpe, pop, csh_i) %>%
+  filter(year %in% start_year:end_year) %>%
+  group_by(country) %>%
+  mutate(invsh = mean(csh_i),
+         gdppc = rgdpe / pop,
+         gdppc_growth = (log(last(gdppc)) - log(first(gdppc))) / diff,
+         pop_growth = (log(last(pop)) - log(first(pop))) / diff) %>%
+  filter(year %in% c(start_year, end_year)) %>%
+  filter(sum(is.na(rgdpe)) < 1) %>%
+  filter(year == start_year)
+    
+unc_6090 <- lm(gdppc_growth ~ log(gdppc), data = data_60_90)
+#summary(unc_6090)
+
+p1 <- ggplot(data_60_90, aes(x = log(gdppc), y = gdppc_growth)) + 
+  geom_point() +
+  stat_smooth(method = "lm", col = "blue", lty="dotted")+
+  ggtitle("Unconditional Convergence 1960 - 1990 Period")
+
+#### PERIOD II
+start_year = 1990
+end_year = 2019
+diff = end_year - start_year
+
+data_90_19 <-   
+  read_dta("pwt1001.dta")  %>%
+  select(country, year, rgdpe, pop, csh_i) %>%
+  filter(year %in% start_year:end_year) %>%
+  group_by(country) %>%
+  mutate(invsh = mean(csh_i),
+         gdppc = rgdpe / pop,
+         gdppc_growth = (log(last(gdppc)) - log(first(gdppc))) / diff,
+         pop_growth = (log(last(pop)) - log(first(pop))) / diff) %>%
+  filter(year %in% c(start_year, end_year)) %>%
+  filter(sum(is.na(rgdpe)) < 1) %>%
+  filter(year == start_year)
+    
+unc_9019 <- lm(gdppc_growth ~ log(gdppc), data = data_90_19)
+#summary(unc_9019)
+
+p2 <- ggplot(data_90_19, aes(x = log(gdppc), y = gdppc_growth)) + 
+  geom_point() +
+  stat_smooth(method = "lm", col = "blue", lty="dotted")+
+  ggtitle("Unconditional Convergence 1990 - 2019 Period")
+
+stargazer(unc_6090, unc_9019, column.labels = c("1960 - 1990", "1990 - 2019"),header = FALSE)
+grid.arrange(p1, p2, ncol=2)
+
+```
+
+\newpage
+
+## Subquestion 1.2 - Conditional Beta-Convergence
+
+```{r Conditional Income Convergence, echo=FALSE, results='asis'}
+cond_6090 <- lm(gdppc_growth ~ log(gdppc) + pop_growth + invsh, data = data_60_90)
+cond_9019 <- lm(gdppc_growth ~ log(gdppc) + pop_growth + invsh, data = data_90_19)
+summary(cond_6090)
+stargazer(cond_6090,cond_9019, column.labels = c("1960 - 1990", "1990 - 2019"),header = FALSE)
+```
+
+\newpage
+
+# Question 2 - Mankiw, Romer, Weil Paper
+
+<!-- Quote from Makiw, Romer, Weil:
+We use a proxy for the rate of human-capital accumulation (sh)
+that measures approximately the percentage of the working-age
+population that is in secondary school. We begin with data on the
+fraction of the eligible population (aged 12 to 17) enrolled in
+secondary school, which we obtained from the UNESCO yearbook.
+We then multiply this enrollment rate by the fraction of the
+working-age population that is of school age (aged 15 to 19). This
+variable, which we call SCHOOL-->
+
+## Subquestion 2.1 - Replicating Table VI
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, echo=FALSE}
+acl <- read.delim("AfricanCountriesList.txt", header=FALSE)
+acl <- c(acl$V1,'Central Afr. Rep.','Congo,','Gambia, The','Ivory Coast','S. Africa','Swaziland','Zaire')
+mrw <-
+  read_csv("mrw.csv") %>%
+  mutate(sk = log(i_y/100)-log(0.05+popgrowth/100)) %>%
+  mutate(sh = log(school/100)-log(0.05+popgrowth/100)) %>%
+  mutate(dep = I(log(rgdpw85)-log(rgdpw60))) %>%
+  mutate(Africa = ifelse(country %in% acl, 1,0))
+
+reg1 <- lm(dep ~ log(rgdpw60)+sk+sh, data=filter(mrw, n==1))
+reg2 <- lm(dep ~ log(rgdpw60)+sk+sh, data=filter(mrw, i==1))
+reg3 <- lm(dep ~ log(rgdpw60)+sk+sh, data=filter(mrw, o==1))
+```
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results = "asis", echo=FALSE}
+stargazer(reg1, reg2, reg3, 
+          column.labels = c("Non-Oil","Intermediate","OECD"),
+          covariate.labels = c("ln(Y60)","ln(I/GDP)-ln(n+g+d)","ln(SCHOOL)-ln(n+g+d)"),
+          dep.var.caption = "log difference GDP per working-age person 1960-1985",
+          title = "TABELLE 3",
+          header=FALSE, type="latex")
+```
+
+
+\newpage
+
+## Subquestion 2.2 - Indicator for Africa
+```{r, echo=FALSE}
+regAfrica <- lm(dep ~ log(rgdpw60)+sk+sh+sh:Africa, data=filter(mrw, n==1))
+regAfrica2 <- lm(dep ~ log(rgdpw60)+sk+sh+sh:Africa, data=mrw)
+regAfrica3 <- lm(dep ~ log(rgdpw60)+sk+sh+sh:Africa, data=filter(mrw, i==1))
+```
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results = "asis", echo=FALSE}
+stargazer(regAfrica,regAfrica2,regAfrica3,
+          dep.var.caption = "log difference GDP per working-age person 1960-1985",
+          title = "Effect of African Countries",
+          header=FALSE, type="latex")
+```
+
+\newpage
+
+
+## Subquestion 2.3 - Speed of Convergence
+
+```{r, echo=FALSE}
+regAfrica <- lm(dep ~ log(rgdpw60)+sk+sh+log(rgdpw60):Africa, data=filter(mrw, n==1))
+regAfrica2 <- lm(dep ~ log(rgdpw60)+sk+sh+log(rgdpw60):Africa, data=mrw)
+regAfrica3 <- lm(dep ~ log(rgdpw60)+sk+sh+log(rgdpw60):Africa, data=filter(mrw, i==1))
+```
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, results = "asis", echo=FALSE}
+stargazer(regAfrica,regAfrica2,regAfrica3,
+          dep.var.caption = "log difference GDP per working-age person 1960-1985",
+          title = "Effect of African Countries",
+          column.labels = c("Non-Oil","All available countries","Intermediate"),
+          covariate.labels = c("ln(Y60)","ln(I/GDP)-ln(n+g+d)","ln(SCHOOL)-ln(n+g+d)","ln(Y60):Africa"),
+          header=FALSE, type="latex")
+```
